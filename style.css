@@ -1,0 +1,10 @@
+
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;background:white;}
+header{text-align:center;padding:20px;border-bottom:1px solid #e5e7eb;background:white;}
+.card{background:white;margin:20px;padding:20px;border-bottom:1px solid #e5e7eb;}
+.autocomplete{position:relative;width:100%;}
+.autocomplete-list{position:absolute;top:48px;left:0;right:0;background:white;border:1px solid #e5e7eb;
+border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);max-height:280px;overflow-y:auto;z-index:100;}
+.autocomplete-item{padding:14px;cursor:pointer;font-size:15px;line-height:1.4;}
+.autocomplete-item:hover{background:#f3f4f6;}
+.hidden{display:none;}
