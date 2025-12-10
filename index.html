@@ -1,32 +1,349 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Giro de Estoque</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giro de Estoque</title>
+
+  <link rel="manifest" href="manifest.json" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Giro de Estoque">
+
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header><h1>Giro de Estoque</h1></header>
+  <header>
+    <h1>Giro de Estoque</h1>
+    <p>App para você e seus vendedores controlarem o giro por cliente.</p>
+  </header>
 
-<main>
-<section class="card">
-<h2>Adicionar produto (Visita)</h2>
+  <main>
+    <!-- HOME -->
+    <section id="homeView" class="card home-card">
+      <h2>Menu</h2>
+      <p>Escolha o que deseja acessar:</p>
+      <div class="home-buttons">
+        <button id="btnGoClientes" class="primary">Clientes</button>
+        <button id="btnGoProdutos" class="primary">Produtos</button>
+        <button id="btnGoDados" class="primary">Dados / Giro</button>
+        <button id="btnGoConfig" class="primary">Vendedores / Empresa</button>
+        <button id="btnBackupAll" class="secondary">Backup (baixar tudo)</button>
+        <button id="btnImportBackup" class="secondary">Importar backup</button>
+      </div>
+      <input type="file" id="backupJsonInput" accept="application/json,.json" style="display:none" />
+    </section>
 
-<div class="autocomplete">
-  <input id="clienteItemProduto" placeholder="Digite o produto..." autocomplete="off" />
-  <div id="autocompleteProdutos" class="autocomplete-list hidden"></div>
-</div>
+    <!-- CLIENTES -->
+    <section id="clientesView" class="card view hidden">
+      <div class="view-header">
+        <button class="secondary small btn-home">&larr; Home</button>
+        <h2>Clientes</h2>
+      </div>
 
-<div id="selecionadosContainer" class="card hidden">
-  <h3>Produtos selecionados</h3>
-  <ul id="listaSelecionados"></ul>
-</div>
+      <div class="import-actions">
+        <button id="importClientesBtn" class="secondary small">Importar clientes (CSV)</button>
+        <button id="baixarModeloClientesBtn" class="secondary small">Modelo clientes</button>
+        <button id="apagarTodosClientesBtn" class="danger small">Apagar todos os clientes</button>
+      </div>
+      <p class="import-hint">
+        Formato: nome;cidade &nbsp; (primeira linha pode ser cabeçalho)
+      </p>
+      <input type="file" id="clientesCsvInput" accept=".csv,text/csv" style="display:none" />
 
-<button class="primary">Adicionar</button>
-</section>
-</main>
+      <div class="novo-item">
+        <h3>+ Novo cliente</h3>
+        <div class="grid">
+          <div class="field">
+            <label for="novoClienteNome">Nome</label>
+            <input id="novoClienteNome" placeholder="Ex: Pet Shop Alegria" />
+          </div>
+          <div class="field">
+            <label for="novoClienteCidade">Cidade</label>
+            <input id="novoClienteCidade" placeholder="Ex: Quirinopolis" />
+          </div>
+        </div>
+        <p class="import-hint">
+          Será salvo em LETRA MAIÚSCULA e sem acentos automaticamente.
+        </p>
+        <button id="salvarClienteBtn" class="primary small">Salvar cliente</button>
+      </div>
 
-<script src="app.js"></script>
+      <div class="lista-container">
+        <h3>Clientes cadastrados por cidade</h3>
+        <div class="filters">
+          <input id="filtroListaClientes" placeholder="Filtrar por nome ou cidade" />
+          <input id="filtroDiasSemVisita" type="number" min="0" placeholder="Sem visita há (dias)" />
+        </div>
+        <p class="import-hint">
+          Ex: digite 30 para ver clientes sem visita há 30 dias ou mais.
+        </p>
+        <div id="listaClientesView" class="sub-lista"></div>
+      </div>
+    </section>
+
+    <!-- DETALHE CLIENTE -->
+    <section id="clienteDetalheView" class="card view hidden">
+      <div class="view-header">
+        <button class="secondary small" id="btnVoltarClientes">&larr; Clientes</button>
+        <h2 id="clienteDetalheTitulo">Cliente</h2>
+      </div>
+      <p class="import-hint" id="clienteDetalheCidade"></p>
+      <div id="clienteResumo" class="cliente-resumo"></div>
+
+      <div class="novo-item">
+        <h3>Produtos que esse cliente compra</h3>
+        <div id="clienteProdutosLista" class="sub-lista"></div>
+      </div>
+
+      <div class="novo-item">
+        <h3>Gerar nova visita</h3>
+        <p class="import-hint" id="clienteVisInfoEdicao"></p>
+        <div class="grid">
+          <div class="field">
+            <label for="clienteVisVendedor">Vendedor</label>
+            <input id="clienteVisVendedor" placeholder="Ex: JUNIOR" />
+          </div>
+          <div class="field">
+            <label for="clienteVisProxVisita">Próxima visita</label>
+            <input id="clienteVisProxVisita" type="date" />
+          </div>
+          <div class="field">
+            <label for="clienteVisStatus">Status da visita</label>
+            <select id="clienteVisStatus">
+              <option value="PENDENTE">Pendente</option>
+              <option value="FECHOU">Fechou pedido</option>
+              <option value="NAO_FECHOU">Não fechou</option>
+            </select>
+          </div>
+          <div class="field field-full">
+            <label for="clienteVisObs">Observações</label>
+            <textarea id="clienteVisObs" rows="2" placeholder="Ex: Quer promoção, pouco espaço, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="grid grid-itens">
+          <div class="field field-produto-full">
+            <label for="clienteItemProduto">Produto</label>
+            <input id="clienteItemProduto" list="listaProdutos" placeholder="Produto" />
+          </div>
+          <div class="field">
+            <label for="clienteItemEstoque">Estoque (sacos)</label>
+            <input id="clienteItemEstoque" type="number" inputmode="numeric" min="0" />
+          </div>
+          <div class="field">
+            <label for="clienteItemSugestao">Venda (sacos)</label>
+            <input id="clienteItemSugestao" type="number" inputmode="numeric" min="0" />
+          </div>
+        </div>
+        <button id="clienteAddProdutoBtn" class="secondary small">Adicionar produto na visita</button>
+
+        <div class="lista-container">
+          <h4>Produtos desta visita</h4>
+          <div id="clienteListaItensVisita" class="lista-itens-visita"></div>
+        </div>
+
+        <div class="quick-actions">
+          <button id="clienteSugestaoAutoBtn" class="secondary small">Sugestão automática</button>
+          <button id="clienteNovaVisitaBtn" class="primary small">Salvar visita</button>
+          <button id="clienteCancelarEdicaoBtn" class="secondary small hidden">Cancelar edição</button>
+        </div>
+      </div>
+
+      <div class="lista-container">
+        <div class="cliente-historico-header">
+          <h3>Histórico de visitas</h3>
+          <button id="btnExportarHistoricoCliente" class="secondary small">Exportar histórico em PDF</button>
+        </div>
+        <div id="clienteHistoricoVisitas" class="sub-lista"></div>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section id="produtosView" class="card view hidden">
+      <div class="view-header">
+        <button class="secondary small btn-home">&larr; Home</button>
+        <h2>Produtos</h2>
+      </div>
+
+      <div class="import-actions">
+        <button id="importProdutosBtn" class="secondary small">Importar produtos (CSV)</button>
+        <button id="baixarModeloProdutosBtn" class="secondary small">Modelo produtos</button>
+        <button id="apagarTodosProdutosBtn" class="danger small">Apagar todos os produtos</button>
+      </div>
+      <p class="import-hint">
+        Formato: nome &nbsp; (primeira linha pode ser cabeçalho)
+      </p>
+      <input type="file" id="produtosCsvInput" accept=".csv,text/csv" style="display:none" />
+
+      <div class="novo-item">
+        <h3>+ Novo produto</h3>
+        <div class="field">
+          <label for="novoProdutoNome">Nome</label>
+          <input id="novoProdutoNome" placeholder="Ex: Racao Magnus 25kg" />
+        </div>
+        <p class="import-hint">
+          Será salvo em LETRA MAIÚSCULA e sem acentos automaticamente.
+        </p>
+        <button id="salvarProdutoBtn" class="primary small">Salvar produto</button>
+      </div>
+
+      <div class="lista-container">
+        <h3>Produtos cadastrados</h3>
+        <input id="filtroListaProdutos" placeholder="Filtrar por nome" />
+        <div id="listaProdutosView" class="sub-lista"></div>
+      </div>
+    </section>
+
+    <!-- DADOS / GIRO GERAL -->
+    <section id="dadosView" class="view hidden">
+      <section class="card">
+        <div class="view-header">
+          <button class="secondary small btn-home">&larr; Home</button>
+          <h2>Giro de estoque (geral)</h2>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="vendedor">Vendedor</label>
+            <input id="vendedor" placeholder="Ex: Junior, Joao..." />
+          </div>
+          <div class="field">
+            <label for="cliente">Cliente</label>
+            <input id="cliente" list="listaClientes" placeholder="Nome do cliente" />
+            <datalist id="listaClientes"></datalist>
+          </div>
+          <div class="field">
+            <label for="produto">Produto</label>
+            <input id="produto" list="listaProdutos" placeholder="Nome do produto" />
+            <datalist id="listaProdutos"></datalist>
+          </div>
+          <div class="field">
+            <label for="estoque">Estoque atual (sacos)</label>
+            <input id="estoque" type="number" inputmode="numeric" min="0" />
+          </div>
+          <div class="field">
+            <label for="sugestao">Venda (sacos)</label>
+            <input id="sugestao" type="number" inputmode="numeric" min="0" />
+          </div>
+          <div class="field">
+            <label for="proxVisita">Próxima visita</label>
+            <input id="proxVisita" type="date" />
+          </div>
+          <div class="field field-full">
+            <label for="obs">Observações</label>
+            <textarea id="obs" rows="2" placeholder="Ex: Falta espaço, cliente quer promoção, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button id="usarUltimoVendedorBtn" class="secondary small">Usar último vendedor</button>
+          <button id="usarUltimoClienteBtn" class="secondary small">Usar último cliente</button>
+          <button id="duplicarUltimoBtn" class="secondary small">Duplicar último lançamento</button>
+        </div>
+
+        <button id="salvarBtn" class="primary">Salvar lançamento</button>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Lançamentos (todos os clientes)</h2>
+            <p class="resumo" id="resumoInfo">Carregando resumo...</p>
+          </div>
+          <button id="limparBtn" class="danger small">Apagar todos</button>
+        </div>
+
+        <div class="actions">
+          <button id="exportarCsvBtn" class="secondary small">Exportar CSV (lista atual)</button>
+          <button id="copiarResumoBtn" class="secondary small">Copiar resumo p/ WhatsApp</button>
+        </div>
+
+        <div class="date-filters">
+          <button data-filter="all" class="date-filter active">Todos</button>
+          <button data-filter="today" class="date-filter">Hoje</button>
+          <button data-filter="yesterday" class="date-filter">Ontem</button>
+          <button data-filter="week" class="date-filter">Esta semana</button>
+        </div>
+
+        <div class="filters">
+          <input id="filtroCliente" placeholder="Filtrar por cliente" />
+          <input id="filtroVendedor" placeholder="Filtrar por vendedor" />
+        </div>
+
+        <div id="listaLancamentos"></div>
+
+        <div class="sub-resumos">
+          <h3>Resumo por vendedor</h3>
+          <div id="resumoVendedores" class="sub-lista"></div>
+
+          <h3>Resumo por cidade</h3>
+          <div id="resumoCidades" class="sub-lista"></div>
+
+          <h3>Resumo por produto</h3>
+          <div id="resumoProdutos" class="sub-lista"></div>
+        </div>
+      </section>
+    </section>
+
+    <!-- CONFIGURAÇÕES: VENDEDORES / EMPRESA -->
+    <section id="configView" class="view hidden">
+      <section class="card">
+        <div class="view-header">
+          <button class="secondary small btn-home">&larr; Home</button>
+          <h2>Vendedores e Empresa</h2>
+        </div>
+
+        <div class="novo-item">
+          <h3>Dados da empresa</h3>
+          <div class="field">
+            <label for="empresaNome">Nome da empresa</label>
+            <input id="empresaNome" placeholder="Ex: MASTER ATACADISTA PET" />
+          </div>
+          <div class="field">
+            <label>Logo da empresa</label>
+            <div class="logo-actions">
+              <button id="empresaLogoBtn" class="secondary small">Selecionar logo (PNG/JPG)</button>
+              <input type="file" id="empresaLogoInput" accept="image/*" style="display:none" />
+            </div>
+            <img id="empresaLogoPreview" class="empresa-logo-preview hidden" alt="Logo da empresa" />
+            <p class="import-hint">
+              A logo será usada nos PDFs de visita e histórico. Ideal usar fundo branco ou transparente.
+            </p>
+          </div>
+          <button id="salvarEmpresaBtn" class="primary small">Salvar empresa</button>
+        </div>
+
+        <div class="lista-container">
+          <h3>Cadastro de vendedores</h3>
+          <div class="grid">
+            <div class="field">
+              <label for="novoVendedorNome">Nome do vendedor</label>
+              <input id="novoVendedorNome" placeholder="Ex: JUNIOR" />
+            </div>
+            <div class="field">
+              <label for="novoVendedorEmpresa">Empresa do vendedor</label>
+              <input id="novoVendedorEmpresa" placeholder="Ex: MASTER ATACADISTA PET" />
+            </div>
+          </div>
+          <p class="import-hint">
+            Esses dados serão usados nos PDFs. O nome do vendedor deve bater com o digitado nas visitas.
+          </p>
+          <button id="salvarVendedorBtn" class="primary small">Adicionar vendedor</button>
+
+          <div id="listaVendedoresView" class="sub-lista" style="margin-top:8px;"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <small>Giro de Estoque • PWA simples (dados salvos neste aparelho).</small>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
