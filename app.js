@@ -2011,8 +2011,12 @@ salvarVendedorBtn.addEventListener('click', () => {
   const cfg = obterConfig();
   if (!Array.isArray(cfg.vendedores)) cfg.vendedores = [];
 
-  // Permitir apenas UM vendedor cadastrado por aparelho.
-  cfg.vendedores = [{ nome, empresa: empresaVend }];
+  const existe = cfg.vendedores.find(v => v.nome === nome);
+  if (existe) {
+    existe.empresa = empresaVend || existe.empresa;
+  } else {
+    cfg.vendedores.push({ nome, empresa: empresaVend });
+  }
 
   salvarConfig(cfg);
   novoVendedorNomeInput.value = '';

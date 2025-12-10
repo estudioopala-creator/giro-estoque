@@ -1,4 +1,15 @@
 
+/* iOS Premium Override */
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:white;margin:0;}
+header, nav{background:white;border-bottom:1px solid #e5e7eb;}
+.card, section{background:white;border-bottom:1px solid #e5e7eb;padding:16px;border-radius:0;}
+button, .btn{background:#2563eb;color:white;border:none;padding:12px 18px;border-radius:12px;font-size:16px;}
+input, select{padding:12px;border:1px solid #d1d5db;border-radius:12px;width:100%;font-size:16px;}
+.autocomplete-list{border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+
+
+/* Original CSS preserved below */
+
 * {
   box-sizing: border-box;
 }
@@ -455,4 +466,35 @@ footer {
   border: 1px solid #e5e7eb;
   padding: 4px;
   background: #ffffff;
+}
+
+
+/* Esconder campos de lançamento manual no giro geral
+   e campos extras de visita no cliente, mantendo apenas observação e produtos */
+label[for="clienteVisVendedor"],
+#clienteVisVendedor,
+label[for="clienteVisProxVisita"],
+#clienteVisProxVisita,
+label[for="clienteVisStatus"],
+#clienteVisStatus,
+/* Campos da tela Giro Geral (entrada manual) */
+label[for="vendedor"],
+#vendedor,
+label[for="cliente"],
+#cliente,
+label[for="produto"],
+#produto,
+label[for="estoque"],
+#estoque,
+label[for="sugestao"],
+#sugestao,
+label[for="proxVisita"],
+#proxVisita,
+label[for="obs"],
+#obs,
+#usarUltimoVendedorBtn,
+#usarUltimoClienteBtn,
+#duplicarUltimoBtn,
+#salvarBtn {
+  display: none !important;
 }
