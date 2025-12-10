@@ -1,7 +1,6 @@
+// Sistema pronto para receber lista de produtos em window.PRODUTOS = ["produto", "produto2", ...];
 
-// NOVO AUTOCOMPLETE + MULTIPLA SELEÇÃO
-
-let produtos = window.PRODUTOS || [];
+window.PRODUTOS = window.PRODUTOS || [];
 
 const input = document.getElementById("clienteItemProduto");
 const lista = document.getElementById("autocompleteProdutos");
@@ -9,34 +8,28 @@ const selecionados = [];
 const selecionadosContainer = document.getElementById("selecionadosContainer");
 const listaSelecionados = document.getElementById("listaSelecionados");
 
-// --- Função de busca com descrição completa ---
+// Busca produtos
 input.addEventListener("input", () => {
   const termo = input.value.toLowerCase();
+  if (!termo) { lista.classList.add("hidden"); return; }
 
-  if (!termo) {
-    lista.classList.add("hidden");
-    return;
-  }
-
-  const filtrados = produtos.filter(p =>
-    p.descricao.toLowerCase().includes(termo)
+  const filtrados = window.PRODUTOS.filter(p =>
+    p.toLowerCase().includes(termo)
   );
 
   renderLista(filtrados);
 });
 
-// --- Renderiza itens no autocomplete ---
 function renderLista(arr) {
   lista.innerHTML = "";
   lista.classList.remove("hidden");
 
-  arr.forEach(prod => {
+  arr.forEach(nome => {
     const div = document.createElement("div");
     div.classList.add("autocomplete-item");
 
-    // Descrição quebrada em até 5 linhas
     const p = document.createElement("p");
-    p.textContent = prod.descricao;
+    p.textContent = nome;
     p.style.display = "-webkit-box";
     p.style.webkitLineClamp = "5";
     p.style.webkitBoxOrient = "vertical";
@@ -44,9 +37,8 @@ function renderLista(arr) {
 
     div.appendChild(p);
 
-    // Ao clicar → adiciona à lista de selecionados
     div.addEventListener("click", () => {
-      adicionaSelecionado(prod);
+      adicionaSelecionado(nome);
       lista.classList.add("hidden");
       input.value = "";
     });
@@ -55,50 +47,29 @@ function renderLista(arr) {
   });
 }
 
-// --- Adiciona item na lista temporária ---
-function adicionaSelecionado(prod) {
-  selecionados.push(prod);
-
+function adicionaSelecionado(nome) {
+  selecionados.push(nome);
   selecionadosContainer.classList.remove("hidden");
 
   const li = document.createElement("li");
   li.classList.add("selecionado-item");
-  li.setAttribute("data-id", prod.id);
-
-  li.innerHTML = `
-    ${prod.descricao}
-    <button class="remove-btn">X</button>
-  `;
+  li.innerHTML = `${nome} <button class="remove-btn">X</button>`;
 
   li.querySelector(".remove-btn").addEventListener("click", () => {
-    removeSelecionado(prod.id, li);
+    const index = selecionados.indexOf(nome);
+    if (index !== -1) selecionados.splice(index, 1);
+    li.remove();
+    if (selecionados.length === 0) selecionadosContainer.classList.add("hidden");
   });
 
   listaSelecionados.appendChild(li);
 }
 
-// --- Remove individual ---
-function removeSelecionado(id, elemento) {
-  const index = selecionados.findIndex(p => p.id === id);
-  if (index !== -1) selecionados.splice(index, 1);
-
-  elemento.remove();
-
-  if (selecionados.length === 0) {
-    selecionadosContainer.classList.add("hidden");
-  }
-}
-
-// --- Botão "Adicionar" envia todos os produtos ---
 document.querySelector(".primary").addEventListener("click", () => {
-  if (selecionados.length === 0) {
-    alert("Selecione ao menos 1 produto.");
-    return;
-  }
+  if (selecionados.length === 0) { alert("Selecione ao menos 1 produto."); return; }
 
-  console.log("Enviar estes produtos:", selecionados);
+  console.log("Produtos adicionados:", selecionados);
 
-  // Limpar lista
   selecionados.length = 0;
   listaSelecionados.innerHTML = "";
   selecionadosContainer.classList.add("hidden");

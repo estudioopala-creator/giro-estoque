@@ -1,1 +1,8 @@
-{"name":"Giro de Estoque","short_name":"Estoque"}
+{
+  "name": "Giro de Estoque",
+  "short_name": "Estoque",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb"
+}
