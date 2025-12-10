@@ -26,36 +26,3 @@ header {text-align:center; padding:16px; background:white;
 }
 .autocomplete-item:hover { background:#f2f3f7; }
 .hidden { display:none; }
-
-
-#listaSelecionados {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.selecionado-item {
-  padding: 10px 12px;
-  background: #eef2ff;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-}
-
-.remove-btn {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.autocomplete-item p {
-  margin: 0;
-  white-space: normal;
-}
