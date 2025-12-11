@@ -2035,7 +2035,80 @@ function inicializar() {
   carregarLancamentos();
   showView('home');
 }
+// ===============================
+// 🔎 BUSCA INTELIGENTE DE PRODUTOS (CLIENTE)
+// ===============================
 
+const campoBuscaProduto = document.getElementById('clienteItemProduto');
+
+// criar caixa de sugestões
+const caixaSugestoes = document.createElement('div');
+caixaSugestoes.className = "autocomplete-list";
+caixaSugestoes.style.position = "absolute";
+caixaSugestoes.style.background = "#fff";
+caixaSugestoes.style.width = "100%";
+caixaSugestoes.style.maxHeight = "200px";
+caixaSugestoes.style.border = "1px solid #ddd";
+caixaSugestoes.style.borderRadius = "6px";
+caixaSugestoes.style.overflowY = "auto";
+caixaSugestoes.style.zIndex = "9999";
+caixaSugestoes.style.display = "none";
+
+campoBuscaProduto.parentElement.appendChild(caixaSugestoes);
+
+// quando digitar
+campoBuscaProduto.addEventListener('input', () => {
+    const texto = campoBuscaProduto.value.trim().toUpperCase();
+    const produtos = obterProdutos();
+
+    if (!texto) {
+        caixaSugestoes.style.display = "none";
+        return;
+    }
+
+    const filtrados = produtos.filter(p => p.nome.includes(texto));
+
+    caixaSugestoes.innerHTML = "";
+
+    if (!filtrados.length) {
+        caixaSugestoes.innerHTML = `<div style="padding:8px;color:#999;">Nenhum produto encontrado</div>`;
+        caixaSugestoes.style.display = "block";
+        return;
+    }
+
+    filtrados.slice(0, 25).forEach(prod => {
+        const item = document.createElement('div');
+        item.textContent = prod.nome;
+        item.style.padding = "10px";
+        item.style.cursor = "pointer";
+        item.style.borderBottom = "1px solid #eee";
+
+        item.addEventListener('click', () => {
+            campoBuscaProduto.value = prod.nome;
+            caixaSugestoes.style.display = "none";
+        });
+
+        item.addEventListener("mouseenter", () => {
+            item.style.background = "#f3f4f6";
+        });
+
+        item.addEventListener("mouseleave", () => {
+            item.style.background = "white";
+        });
+
+        caixaSugestoes.appendChild(item);
+    });
+
+    caixaSugestoes.style.display = "block";
+});
+
+// esconder ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!campoBuscaProduto.contains(e.target) &&
+        !caixaSugestoes.contains(e.target)) {
+        caixaSugestoes.style.display = "none";
+    }
+});
 inicializar();
 
 if ('serviceWorker' in navigator) {
